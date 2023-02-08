@@ -48,8 +48,7 @@
                 401: () => window.location.href="/",
             },
             headers: { "suresteps.session.token": usertoken},
-            contentType: "application/text",
-            dataType: 'text'
+            contentType: "application/json"
         });
 
     }

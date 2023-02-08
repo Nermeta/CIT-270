@@ -9,12 +9,27 @@ const {v4: uuidv4} = require('uuid');
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 app.use(bodyParser.json());
 
+app.use(async function(req, res, next){
+    var cookie = req.cookies.stedicookie;
+    if(cookie === undefined && !req.url.includes("login") && !req.url.includes("html") && !req.url.includes("js")
+    && !req.url.includes("css") && !req.url.includes("ico") && !req.url.includes("png") && req.url !== "/") {
+        res.status(401);
+        res.send("No Cookies for you");
+    }
+    else{
+        res.status(200);
+        next();
+    }
+});
+
 app.post('/rapidsteptest', async (req, res) =>{
     const steps = req.body;
-    await redisClient.zAdd("Steps", steps, 0);
+    await redisClient.zAdd('Steps',[{score:0,value:JSON.stringify(steps)}]);
     console.log("Steps", steps);
     res.send('saved');
 })
@@ -41,7 +56,7 @@ app.post('/login', async (req, res) =>{
     if (correctPassword==loginPassword){
         const loginToken = uuidv4();
         await redisClient.hSet('TokenMap',loginToken,loginUser);
-        res.cookie('stedicookie',loginToken)
+        res.cookie('stedicookie',loginToken);
         res.send(loginToken);
     }
     else {
